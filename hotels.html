@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Recommendations - Trip Planner AI</title>
+    <link rel="stylesheet" href="hotels.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body data-page="hotels">
+
+    <!-- Header -->
+    <header class="app-header">
+        <div class="container header-content">
+            <a href="HP/index.html" class="logo">
+                <i class="fa-solid fa-leaf" style="color: #22c55e;"></i>
+                <span>Trip Planner AI</span>
+            </a>
+
+            <nav class="main-nav">
+                <a href="HP/index.html">Home</a>
+                <a href="#" class="active">Explore</a>
+                <a href="tripcart.html">My Trip</a>
+                <a href="settings.html">Settings</a>
+                <a href="#">Community</a>
+            </nav>
+
+            <div class="header-right">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="Search destinations...">
+                </div>
+                <a href="tripcart.html" class="cart-icon" style="position: relative; font-size: 20px; color: #64748b;">
+                    <i class="fa-solid fa-suitcase-rolling"></i>
+                    <span class="cart-badge">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container main-content">
+
+        <!-- Budget Overview Banner -->
+        <div class="budget-banner">
+            <div class="budget-info-row">
+                <div class="budget-left" style="display: none;">
+                    <i class="fa-solid fa-wallet"></i>
+                    <span>Your Budget: <strong id="totalBudget"></strong></span>
+                </div>
+                <div class="budget-progress-mini">
+                    <div class="progress-bar-mini">
+                        <div class="progress-fill-mini" id="budgetProgress" style="width: 0%;"></div>
+                    </div>
+                    <span id="budgetSpent">₹0 spent</span>
+                </div>
+                <a href="tripcart.html" class="view-cart-btn">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    View Cart (<span id="cartCount">0</span>)
+                </a>
+            </div>
+        </div>
+
+        <!-- Page Header -->
+        <section class="page-header">
+            <div class="header-left">
+                <span class="smart-badge"><i class="fa-solid fa-sparkles"></i> SMART ITINERARY</span>
+                <h1>AI Recommendations</h1>
+                <p class="subtitle">Curated travel picks based on your unique style and past preferences.</p>
+            </div>
+            <button class="btn-edit-prefs" onclick="window.location.href='HP/index.html'">
+                <i class="fa-solid fa-sliders"></i>
+                Edit Preferences
+            </button>
+        </section>
+
+        <!-- Category Tabs -->
+        <div class="category-tabs">
+            <button class="tab active" data-category="hotels">
+                <i class="fa-solid fa-bed"></i>
+                Hotels
+            </button>
+            <button class="tab" data-category="restaurants">
+                <i class="fa-solid fa-utensils"></i>
+                Restaurants
+            </button>
+            <button class="tab" data-category="activities">
+                <i class="fa-solid fa-landmark"></i>
+                Sights
+            </button>
+            <button class="tab" data-category="transport">
+                <i class="fa-solid fa-car"></i>
+                Transport
+            </button>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-wrapper">
+
+            <!-- Cards Grid -->
+            <div class="cards-grid" id="recommendationsGrid">
+                <!-- Cards will be dynamically inserted here -->
+            </div>
+
+            <!-- Sidebar -->
+            <aside class="sidebar-widget">
+                <div class="widget-card">
+                    <div class="widget-icons">
+                        <span class="icon-circle green"><i class="fa-solid fa-plus"></i></span>
+                    </div>
+                    <a href="tripcart.html" class="btn-itinerary">
+                        <i class="fa-solid fa-suitcase-rolling"></i>
+                        Trip Itinerary
+                        <span class="badge-count" id="sidebarCartCount">0</span>
+                    </a>
+                    <h4>Want more options?</h4>
+                    <p>Adjust your filters or tell AI more about what you're looking for.</p>
+                    <a href="HP/index.html" class="customize-link">Customize AI Engine →</a>
+                </div>
+            </aside>
+
+        </div>
+
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="database.js"></script>
+    <script src="app.js"></script>
+    <script>
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://hgwappdukbsnxmjizrqg.supabase.co';
+        const SUPABASE_ANON_KEY = 'ENTER_YOUR_ANON_KEY_HERE';
+        let supabaseClient = null;
+
+        try {
+            if (typeof window.supabase !== 'undefined' && SUPABASE_ANON_KEY !== 'ENTER_YOUR_ANON_KEY_HERE') {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+        } catch (err) {
+            console.error('Supabase initialization failed:', err);
+        }
+
+
+        // Render recommendations based on category
+        async function renderRecommendations(category = 'hotels') {
+            const grid = document.getElementById('recommendationsGrid');
+            const tripData = TripPlanner.getTripData();
+            const destination = tripData.destination ? tripData.destination.toLowerCase().trim() : '';
+            const userBudget = tripData.budget || 0;
+
+            let items = [];
+
+            // Try fetching from Supabase if configured
+            if (supabaseClient) {
+                try {
+                    const { data, error } = await supabaseClient
+                        .from(category)
+                        .select('*')
+                        .ilike('location', `%${destination}%`);
+
+                    if (!error && data && data.length > 0) {
+                        items = data;
+                    }
+                } catch (err) {
+                    console.error('Supabase fetch error:', err);
+                }
+            }
+
+
+            // Fallback to local Database if entries are empty or Supabase is not configured
+            if (items.length === 0) {
+                items = Database[category] || [];
+                if (destination) {
+                    items = items.filter(item =>
+                        item.location.toLowerCase().includes(destination) ||
+                        item.name.toLowerCase().includes(destination)
+                    );
+                }
+            }
+
+            // Apply Price/Budget Category Filtering
+            // We filter results based on the budget type selected.
+            // However, we don't want to show an empty screen if no items perfectly match the budget tier.
+            const allItemsForDestination = [...items];
+
+            items = items.filter(item => {
+                // If user selected "Budget" (50k total)
+                if (userBudget <= 50000) return item.price <= 5000;
+                // If user selected "Midrange" (200k total)
+                if (userBudget <= 200000) return item.price <= 15000;
+                // Luxury shows everything
+                return true;
+            });
+
+            // Fallback: If filtering by budget removed everything, show all for that destination
+            if (items.length === 0 && allItemsForDestination.length > 0) {
+                items = allItemsForDestination;
+                console.log('No items match strict budget, showing all items for', destination);
+            }
+
+
+            if (items.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 60px; background: white; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+                        <i class="fa-solid fa-map-location-dot" style="font-size: 48px; color: #cbd5e1; margin-bottom: 20px;"></i>
+                        <h3 style="color: #0f172a; margin-bottom: 8px;">No ${category} found for "${tripData.destination}"</h3>
+                        <p style="color: #64748b;">Try searching for "Ooty", "Chennai", or "Madurai" to see recommendations.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = items.map((item, index) => `
+                <div class="recommendation-card">
+                    <div class="card-image">
+                        <img src="${item.image}" alt="${item.name}">
+                        ${item.match ? `<span class="match-badge"><i class="fa-solid fa-sparkles"></i> ${item.match}% Match</span>` : ''}
+                        <button class="favorite-btn"><i class="fa-regular fa-heart"></i></button>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-header">
+                            <h3>${item.name}</h3>
+                            <div class="rating"><i class="fa-solid fa-star"></i> ${item.rating}</div>
+                        </div>
+                        <p class="location">${item.location} ${item.type ? '• ' + item.type : ''}</p>
+                        ${item.description ? `
+                        <div class="ai-quote">
+                            <p>"${item.description}"</p>
+                        </div>
+                        ` : ''}
+                        ${item.tags ? `
+                        <div class="tags">
+                            ${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                        </div>
+                        ` : ''}
+                        <div class="card-footer">
+                            <div class="price">
+                                <span class="amount">₹${item.price.toLocaleString()}</span><span class="unit">/${category === 'hotels' ? 'night' : category === 'restaurants' ? 'avg' : 'person'}</span>
+                            </div>
+                            <button class="btn-add-trip" data-category="${category}" data-id="${item.id}">
+                                <i class="fa-solid fa-cart-plus"></i>
+                                Add to Trip
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Attach click handlers
+            attachAddToCartHandlers(category);
+        }
+
+        function attachAddToCartHandlers(category) {
+            document.querySelectorAll('.btn-add-trip').forEach(btn => {
+                btn.addEventListener('click', async function () {
+                    if (this.classList.contains('adding')) return;
+
+                    const cat = this.dataset.category;
+                    const id = this.dataset.id;
+                    const items = Database[cat];
+                    const item = items.find(i => i.id === id);
+
+                    if (!item) return;
+
+                    // Start Animation
+                    const originalContent = this.innerHTML;
+                    this.classList.add('adding');
+                    this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Adding...';
+
+                    // Simulate AI processing delay
+                    await new Promise(resolve => setTimeout(resolve, 800));
+
+                    const success = TripPlanner.addToCart(cat === 'sights' ? 'activities' : cat, {
+                        ...item,
+                        nights: TripPlanner.getTripData().duration || 5,
+                        checkIn: TripPlanner.getTripData().startDate || 'Oct 12',
+                        checkOut: TripPlanner.getTripData().endDate || 'Oct 17'
+                    });
+
+                    if (success) {
+                        this.classList.remove('adding');
+                        this.classList.add('success');
+                        this.innerHTML = '<i class="fa-solid fa-check"></i> Added!';
+
+                        // Reset button after a delay
+                        setTimeout(() => {
+                            this.classList.remove('success');
+                            this.innerHTML = originalContent;
+                        }, 2000);
+                    } else {
+                        this.classList.remove('adding');
+                        this.innerHTML = originalContent;
+                    }
+
+                    updateBudgetDisplay();
+                });
+            });
+        }
+
+        function updateBudgetDisplay() {
+            const status = TripPlanner.getBudgetStatus();
+            const count = TripPlanner.getCartItemCount();
+
+            if (document.getElementById('totalBudget')) {
+                document.getElementById('totalBudget').textContent = `₹${status.total.toLocaleString()}`;
+            }
+            document.getElementById('budgetSpent').textContent = `₹${status.spent.toLocaleString()} spent`;
+            document.getElementById('budgetProgress').style.width = `${status.percentage}%`;
+            document.getElementById('cartCount').textContent = count;
+            document.getElementById('sidebarCartCount').textContent = count;
+
+            // Update cart badges
+            document.querySelectorAll('.cart-badge').forEach(badge => {
+                badge.textContent = count;
+                badge.style.display = count > 0 ? 'flex' : 'none';
+            });
+        }
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', async function () {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+
+                // Show loading state
+                const grid = document.getElementById('recommendationsGrid');
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 60px;"><i class="fa-solid fa-spinner fa-spin" style="font-size: 32px; color: #22c55e;"></i><p style="margin-top: 10px; color: #64748b;">Fetching from Supabase...</p></div>';
+
+                await renderRecommendations(this.dataset.category);
+            });
+        });
+
+        // Initialize
+        async function init() {
+            await renderRecommendations('hotels');
+            updateBudgetDisplay();
+        }
+
+        if (window.Database && window.Database.hotels && window.Database.hotels.length > 0) {
+            init();
+        } else {
+            window.addEventListener('database-ready', init);
+        }
+    </script>
+
+    <style>
+        /* Budget Banner */
+        .budget-banner {
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            border: 1px solid #bbf7d0;
+            border-radius: 12px;
+            padding: 16px 24px;
+            margin-bottom: 24px;
+        }
+
+        .budget-info-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+        }
+
+        .budget-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            color: #166534;
+        }
+
+        .budget-left i {
+            font-size: 18px;
+            color: #22c55e;
+        }
+
+        .budget-progress-mini {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .progress-bar-mini {
+            flex: 1;
+            height: 8px;
+            background: #d1fae5;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .progress-fill-mini {
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e, #16a34a);
+            border-radius: 999px;
+            transition: width 0.4s ease;
+        }
+
+        .budget-progress-mini span {
+            font-size: 13px;
+            color: #166534;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .view-cart-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #22c55e;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .view-cart-btn:hover {
+            background: #16a34a;
+            transform: translateY(-2px);
+        }
+
+        .cart-icon .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ef4444;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Button States */
+        .btn-add-trip.adding {
+            background: #94a3b8 !important;
+            cursor: wait;
+            pointer-events: none;
+        }
+
+        .btn-add-trip.success {
+            background: #10b981 !important;
+            animation: success-pulse 0.4s ease;
+        }
+
+        @keyframes success-pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+    </style>
+
+</body>
+
+</html>

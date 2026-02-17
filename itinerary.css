@@ -1,0 +1,356 @@
+/* Itinerary Page Styles */
+
+/* Header Center Nav Reuse */
+.center-nav {
+    display: flex;
+    gap: 32px;
+}
+
+.center-nav a {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.search-pill-small {
+    background: #f3f4f6;
+    padding: 8px 16px;
+    border-radius: 99px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-light);
+    font-size: 13px;
+    width: 200px;
+}
+
+/* Wrapper Layout */
+.itinerary-wrapper {
+    display: flex;
+    height: calc(100vh - 72px);
+    /* Subtract header height roughly */
+    overflow: hidden;
+}
+
+/* Timeline Panel */
+.timeline-panel {
+    width: 40%;
+    min-width: 450px;
+    background: white;
+    overflow-y: auto;
+    padding: 32px;
+    border-right: 1px solid #e5e7eb;
+}
+
+/* Itinerary Header */
+.breadcrumb {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--primary-green);
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+}
+
+.title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.title-row h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.edit-plan-btn {
+    background: #f3f4f6;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.meta-text {
+    font-size: 13px;
+    color: var(--text-light);
+    margin: 0 0 24px 0;
+}
+
+/* Day Tabs */
+.day-tabs {
+    display: flex;
+    gap: 24px;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 32px;
+}
+
+.tab {
+    background: none;
+    border: none;
+    padding: 12px 0;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-light);
+    cursor: pointer;
+    position: relative;
+    letter-spacing: 0.5px;
+}
+
+.tab.active {
+    color: var(--primary-green);
+}
+
+.tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--primary-green);
+}
+
+/* Timeline List */
+.timeline-list {
+    position: relative;
+    padding-left: 10px;
+}
+
+/* Green Vertical Line */
+.timeline-list::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 40px;
+    bottom: 20px;
+    width: 2px;
+    background: #e5e7eb;
+    z-index: 1;
+}
+
+.time-header {
+    font-size: 10px;
+    color: #059669;
+    /* Dark green */
+    letter-spacing: 1px;
+    margin: 32px 0 24px 0;
+    padding-left: 10px;
+}
+
+.event-item {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 32px;
+    position: relative;
+    z-index: 2;
+}
+
+.event-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.icon-flight {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.icon-hotel {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.icon-food {
+    background: #ecfccb;
+    color: #65a30d;
+}
+
+.icon-spot {
+    background: #f0fdf4;
+    color: #15803d;
+}
+
+.icon-explore {
+    background: #d1fae5;
+    color: #047857;
+}
+
+
+.event-body {
+    flex: 1;
+    background: white;
+}
+
+.event-top {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.event-top h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.badget-time {
+    background: #f0fdf4;
+    color: #15803d;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.event-body p {
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-light);
+    line-height: 1.5;
+}
+
+/* Map Panel */
+.map-panel {
+    flex: 1;
+    background: #f3f4f6;
+    position: relative;
+    overflow: hidden;
+}
+
+.map-bg {
+    width: 100%;
+    height: 100%;
+    /* Placeholder for map */
+    background: url('https://carto.com/blog/img/posts/2021/2021-08-11-how-to-change-basemap-google-maps/02-google.png') center/cover;
+    opacity: 0.8;
+}
+
+/* Floating Bottom Bar */
+.bottom-float-bar {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 600px;
+    background: white;
+    padding: 16px 24px;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.label {
+    font-size: 8px;
+    font-weight: 700;
+    color: #9ca3af;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.distance {
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.est-time {
+    font-size: 10px;
+    color: var(--text-light);
+}
+
+.book-action {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.total-pkg {
+    text-align: right;
+}
+
+.total-pkg .price {
+    font-weight: 800;
+    font-size: 18px;
+    color: var(--text-dark);
+}
+
+.btn-confirm {
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 14px;
+}
+
+
+/* Map Controls */
+.map-controls {
+    position: absolute;
+    top: 32px;
+    right: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.map-btn {
+    width: 40px;
+    height: 40px;
+    background: white;
+    border-radius: 8px;
+    border: none;
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text-dark);
+}
+
+/* Map Pins */
+.map-pin {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    background: var(--primary-green);
+    color: #064e3b;
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 13px;
+    transform: translate(-50%, -50%);
+    /* Centered on coord */
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .itinerary-wrapper {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .timeline-panel {
+        width: 100%;
+        min-width: 0;
+        padding: 24px;
+    }
+
+    .map-panel {
+        height: 400px;
+        display: none;
+        /* Hide map on mobile for simplicity in this demo */
+    }
+}
