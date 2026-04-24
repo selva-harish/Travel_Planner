@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planning Your Trip...</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #0f172a;
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* Ambient Background */
+        .bg-glow {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 20% 20%, rgba(34, 197, 94, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(56, 189, 248, 0.15) 0%, transparent 40%);
+            z-index: 1;
+        }
+
+        .map-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iNDAwIiBviewQm94PSIwIDAgODAwIDQwMCI+PHBhdGggZmlsbD0iIzMzNDE1NSIgZmlsbC1vcGFjaXR5PSIwLjEiIGQ9Ik0xNTAsMTUwaDUwdjUwaC01MHptMTAwLDUwaDUwdjUwaC01MHptMjAwLTEwMGg1MHY1MGgtNTB6Ii8+PC9zdmc+');
+            background-size: cover;
+            opacity: 0.2;
+            z-index: 2;
+        }
+
+        /* Central Animation Container */
+        .loader-container {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        /* Plane & Globe Animation */
+        .globe-wrapper {
+            width: 180px;
+            height: 180px;
+            margin: 0 auto 40px;
+            position: relative;
+        }
+
+        .globe {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 2px solid #334155;
+            position: relative;
+            box-shadow: 0 0 40px rgba(34, 197, 94, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .globe i {
+            font-size: 80px;
+            color: #334155;
+            animation: pulse-globe 2s infinite;
+        }
+
+        @keyframes pulse-globe {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.5;
+            }
+
+            50% {
+                transform: scale(1.05);
+                opacity: 0.8;
+            }
+        }
+
+        /* Orbiting Plane */
+        .orbit {
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            right: -20px;
+            bottom: -20px;
+            border: 1px dashed rgba(34, 197, 94, 0.3);
+            border-radius: 50%;
+            animation: spin 4s linear infinite;
+        }
+
+        .plane-icon {
+            position: absolute;
+            top: 50%;
+            right: -12px;
+            transform: translateY(-50%) rotate(90deg);
+            width: 24px;
+            height: 24px;
+            background: #22c55e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px #22c55e;
+        }
+
+        .plane-icon i {
+            color: black;
+            font-size: 12px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Progress Steps */
+        .status-area {
+            margin-top: 30px;
+            height: 80px;
+            /* Fixed height to prevent layout shift */
+        }
+
+        .status-text {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeUp 0.5s forwards;
+        }
+
+        .sub-status {
+            font-size: 14px;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .sub-status i {
+            font-size: 12px;
+            color: #22c55e;
+            animation: spin-slow 2s linear infinite;
+        }
+
+        /* Flying Cards Effect */
+        .flying-cards {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .card-icon {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 12px;
+            color: #22c55e;
+            font-size: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+        }
+
+        /* Progress Bar */
+        .progress-wrapper {
+            width: 300px;
+            height: 6px;
+            background: #1e293b;
+            border-radius: 999px;
+            margin: 40px auto 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: #22c55e;
+            border-radius: 999px;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transform: translateX(-100%);
+            animation: shimmer 1s infinite;
+        }
+
+        @keyframes shimmer {
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        @keyframes fadeUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin-slow {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Card animations */
+        @keyframes fly-in {
+            0% {
+                opacity: 0;
+                transform: translateY(50px) scale(0.8);
+            }
+
+            20% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+
+            80% {
+                opacity: 1;
+                transform: translateY(-20px) scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.8);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="bg-glow"></div>
+    <div class="map-overlay"></div>
+
+    <div class="loader-container">
+
+        <!-- Rotating Globe Animation -->
+        <div class="globe-wrapper">
+            <div class="globe">
+                <i class="fa-solid fa-earth-americas"></i>
+            </div>
+            <div class="orbit">
+                <div class="plane-icon">
+                    <i class="fa-solid fa-plane"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dynamic Text -->
+        <div class="status-area">
+            <h2 class="status-text" id="mainStatus">Initiating Travel Engine...</h2>
+            <div class="sub-status">
+                <i class="fa-solid fa-circle-notch"></i>
+                <span id="subStatus">Connecting to global database</span>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-wrapper">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+    </div>
+
+    <!-- Container for flying icons -->
+    <div class="flying-cards" id="flyingCards"></div>
+
+    <script src="database.js"></script>
+    <script src="app.js"></script>
+    <script>
+        const statusSteps = [
+            { main: "Drafting Your Itinerary...", sub: "Analyzing your preferences", duration: 1500 },
+            { main: "Checking Availability...", sub: "Scanning top-rated hotels", duration: 1500 },
+            { main: "Curating Experiences...", sub: "Finding hidden gems & local spots", duration: 1500 },
+            { main: "Optimizing Routes...", sub: "Calculating best travel times", duration: 1500 },
+            { main: "Final Polish...", sub: "Applying AI personalization", duration: 1000 }
+        ];
+
+        const icons = [
+            'fa-hotel', 'fa-utensils', 'fa-map-location-dot', 'fa-camera',
+            'fa-umbrella-beach', 'fa-mountain', 'fa-ticket', 'fa-passport'
+        ];
+
+        let currentStep = 0;
+        const mainStatus = document.getElementById('mainStatus');
+        const subStatus = document.getElementById('subStatus');
+        const progressBar = document.getElementById('progressBar');
+        const flyingCards = document.getElementById('flyingCards');
+
+        function updateStatus() {
+            if (currentStep >= statusSteps.length) {
+                // Complete
+                progressBar.style.width = '100%';
+                mainStatus.textContent = "Itinerary Ready!";
+                subStatus.innerHTML = "<i class='fa-solid fa-check-circle'></i> Redirecting...";
+
+                setTimeout(() => {
+                    // Redirect to the actual itinerary page (which we should create or link to)
+                    // For now, let's redirect to a placeholder or back to summary if itinerary.html isn't ready
+                    // Based on previous convos, itinerary.html was the goal.
+                    window.location.href = 'itinerary.html';
+                }, 1000);
+                return;
+            }
+
+            const step = statusSteps[currentStep];
+
+            // Text Animation
+            mainStatus.style.animation = 'none';
+            mainStatus.offsetHeight; /* trigger reflow */
+            mainStatus.style.animation = 'fadeUp 0.5s forwards';
+            mainStatus.textContent = step.main;
+            subStatus.textContent = step.sub;
+
+            // Progress Bar
+            const progress = ((currentStep + 1) / statusSteps.length) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            currentStep++;
+            setTimeout(updateStatus, step.duration);
+        }
+
+        // Spawn flying icons randomly
+        function spawnIcons() {
+            const icon = document.createElement('div');
+            icon.className = 'card-icon';
+            icon.innerHTML = `<i class="fa-solid ${icons[Math.floor(Math.random() * icons.length)]}"></i>`;
+
+            // Random position
+            const left = 20 + Math.random() * 60; // Keep somewhat central
+            const top = 60 + Math.random() * 20;
+
+            icon.style.left = `${left}%`;
+            icon.style.top = `${top}%`;
+            icon.style.animation = `fly-in 2s forwards`;
+
+            flyingCards.appendChild(icon);
+
+            // Cleanup
+            setTimeout(() => icon.remove(), 2000);
+
+            if (currentStep < statusSteps.length) {
+                setTimeout(spawnIcons, 600);
+            }
+        }
+
+        // Start animations
+        setTimeout(updateStatus, 500);
+        spawnIcons();
+
+    </script>
+</body>
+
+</html>

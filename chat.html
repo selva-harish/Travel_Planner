@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Travel Planner - Tripsero</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="global.css">
+    <link rel="stylesheet" href="chat.css">
+    <!-- Using marked.js for parsing AI markdown nicely -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+
+<body data-page="chat">
+
+    <!-- Simplified Navigation for Chat Page -->
+    <nav class="glass-nav" style="padding: 15px 24px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <div class="container nav-content" style="max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+            <a href="HP/index.html" class="logo" style="text-decoration: none; color: white; display: flex; align-items: center; gap: 8px; font-weight: bold;">
+                <div style="width: 32px; height: 32px; background: #22c55e; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </div>
+                Tripsero
+            </a>
+
+            <div class="nav-links" style="display: flex; gap: 20px;">
+                <a href="HP/index.html" style="color: rgba(255,255,255,0.7); text-decoration: none;">Home</a>
+                <a href="hotels.html" style="color: rgba(255,255,255,0.7); text-decoration: none;">Explore</a>
+                <a href="tripcart.html" style="color: rgba(255,255,255,0.7); text-decoration: none;">My Trip</a>
+                <a href="#" style="color: #22c55e; text-decoration: none; font-weight: bold;">AI Planner</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container" style="flex: 1; display: flex; flex-direction: column;">
+        <div class="chat-container">
+            <!-- Header -->
+            <div class="chat-header">
+                <div class="chat-header-icon">
+                    <i class="fa-solid fa-robot"></i>
+                </div>
+                <div class="chat-header-info">
+                    <h2>Tripsero AI</h2>
+                    <p><span class="online-indicator"></span> Always Online to help you plan</p>
+                </div>
+            </div>
+
+            <!-- Messages Area -->
+            <div class="chat-messages" id="chatBox">
+                <!-- Initial AI Message -->
+                <div class="message ai">
+                    <div class="message-avatar">
+                        <i class="fa-solid fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        Hello! Let's plan your dream trip. Where would you like to go, and where are you starting from?
+                    </div>
+                </div>
+            </div>
+
+            <!-- Typing Indicator -->
+            <div class="message ai" id="typingIndicator" style="display: none; padding-left: 24px; padding-bottom: 10px;">
+                <div class="message-avatar">
+                    <i class="fa-solid fa-robot"></i>
+                </div>
+                <div class="typing-indicator" style="display: flex;">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="chat-input-area">
+                <form class="chat-form" id="chatForm">
+                    <input type="text" id="userInput" placeholder="Type your message here..." autocomplete="off">
+                    <button type="submit" id="sendBtn">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Start the conversation history
+        const messageHistory = [
+            { role: "assistant", content: "Hello! Let's plan your dream trip. Where would you like to go, and where are you starting from?" }
+        ];
+
+        const chatBox = document.getElementById('chatBox');
+        const chatForm = document.getElementById('chatForm');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const typingIndicator = document.getElementById('typingIndicator');
+
+        // Function to render a new message
+        function appendMessage(role, content) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${role === 'user' ? 'user' : 'ai'}`;
+
+            const avatarDiv = document.createElement('div');
+            avatarDiv.className = 'message-avatar';
+            avatarDiv.innerHTML = role === 'user' ? '<i class="fa-solid fa-user"></i>' : '<i class="fa-solid fa-robot"></i>';
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            
+            // If AI, parse markdown. If user, just text.
+            if (role === 'ai' || role === 'assistant') {
+                contentDiv.innerHTML = marked.parse(content);
+            } else {
+                contentDiv.textContent = content;
+            }
+
+            msgDiv.appendChild(avatarDiv);
+            msgDiv.appendChild(contentDiv);
+            chatBox.appendChild(msgDiv);
+
+            // Scroll to bottom
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Handle form submit
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            // 1. Add user message
+            appendMessage('user', message);
+            messageHistory.push({ role: "user", content: message });
+            
+            // Clear input and disable button
+            userInput.value = '';
+            sendBtn.disabled = true;
+            
+            // 2. Show typing indicator
+            typingIndicator.style.display = 'flex';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                // 3. Send to backend
+                const response = await fetch('http://localhost:3000/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ messages: messageHistory })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.ai_response) {
+                    const aiContent = data.ai_response.content;
+                    appendMessage('ai', aiContent);
+                    messageHistory.push(data.ai_response);
+                } else {
+                    appendMessage('ai', "Sorry, I had trouble connecting. Please try again.");
+                }
+            } catch (err) {
+                console.error(err);
+                appendMessage('ai', "Error connecting to the server. Make sure it's running.");
+            } finally {
+                // Remove typing indicator and re-enable input
+                typingIndicator.style.display = 'none';
+                sendBtn.disabled = false;
+                userInput.focus();
+            }
+        });
+    </script>
+    <script src="database.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
