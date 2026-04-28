@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crafting Your Journey... - Tripsero</title>
+    <link rel="stylesheet" href="global.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .loading-container {
+            text-align: center;
+            z-index: 10;
+            perspective: 1000px;
+        }
+
+        .travel-loader {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 40px;
+        }
+
+        .orbit {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 1px dashed rgba(34, 197, 94, 0.2);
+            border-radius: 50%;
+        }
+
+        .plane-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .plane-icon {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%) rotate(90deg);
+            color: #22c55e;
+            font-size: 28px;
+            filter: drop-shadow(0 0 15px rgba(34, 197, 94, 0.6));
+        }
+
+        .center-circle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: rgba(34, 197, 94, 0.1);
+            border: 2px solid rgba(34, 197, 94, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+
+        .status-wrapper {
+            margin-top: 20px;
+        }
+
+        .status-text {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .sub-status {
+            font-size: 16px;
+            color: #94a3b8;
+            height: 24px;
+            font-weight: 500;
+        }
+
+        .progress-bar-container {
+            width: 320px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin: 40px auto 0;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .progress-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e, #4ade80);
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .pref-modal {
+            background: white;
+            width: 90%;
+            max-width: 480px;
+            border-radius: 24px;
+            padding: 32px;
+            position: relative;
+            color: #1e293b;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .pref-modal h2 {
+            font-size: 24px;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 24px;
+            color: #0f172a;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 20px;
+            background: #f8fafc;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .option-item:hover {
+            background: #f1f5f9;
+        }
+
+        .option-item.selected {
+            border-color: #22c55e;
+            background: #f0fdf4;
+        }
+
+        .option-dot {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #cbd5e1;
+            border-radius: 50%;
+            position: relative;
+            background: white;
+        }
+
+        .option-item.selected .option-dot {
+            border-color: #22c55e;
+            background: #22c55e;
+        }
+
+        .option-item.selected .option-dot::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .option-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .btn-next {
+            width: 100%;
+            background: #14b8a6; /* Teal color from image */
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.2s;
+        }
+
+        .btn-next:hover {
+            background: #0d9488;
+            transform: translateY(-2px);
+        }
+
+        .atmosphere {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 30% 30%, rgba(34, 197, 94, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 70%, rgba(20, 184, 166, 0.1) 0%, transparent 50%);
+            z-index: 1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Background Atmosphere -->
+    <div class="atmosphere"></div>
+
+    <div class="loading-container">
+        <div class="travel-loader">
+            <div class="orbit"></div>
+            <div class="plane-wrapper" id="planeWrapper">
+                <i class="fa-solid fa-paper-plane plane-icon"></i>
+            </div>
+            <div class="center-circle" id="centerCircle">
+                <i class="fa-solid fa-earth-americas"></i>
+            </div>
+        </div>
+
+        <div class="status-wrapper">
+            <div class="status-text" id="mainStatus">Designing Your Escape</div>
+            <div class="sub-status" id="subStatus">Curating local experiences...</div>
+        </div>
+
+        <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="progressBar"></div>
+        </div>
+    </div>
+
+    <!-- AI Preference Modal -->
+    <div class="modal-overlay" id="prefModalOverlay">
+        <div class="pref-modal">
+            <div class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></div>
+            <h2>Hey! Are you looking for help in planning your trip?</h2>
+            
+            <div class="options-list">
+                <div class="option-item" onclick="selectOption(this, 'Romantic')">
+                    <div class="option-dot"></div>
+                    <span class="option-text">Yes! A romantic trip</span>
+                </div>
+                <div class="option-item" onclick="selectOption(this, 'Family')">
+                    <div class="option-dot"></div>
+                    <span class="option-text">Yes! For a family trip</span>
+                </div>
+                <div class="option-item" onclick="selectOption(this, 'Honeymoon')">
+                    <div class="option-dot"></div>
+                    <span class="option-text">Yes! A honeymoon trip</span>
+                </div>
+                <div class="option-item" onclick="selectOption(this, 'Friends')">
+                    <div class="option-dot"></div>
+                    <span class="option-text">Yes! For a trip with my friends</span>
+                </div>
+                <div class="option-item" onclick="selectOption(this, 'Group')">
+                    <div class="option-dot"></div>
+                    <span class="option-text">For a group trip</span>
+                </div>
+                <div class="option-item" onclick="selectOption(this, 'Solo')">
+                    <div class="option-dot"></div>
+                    <span class="option-text">For a solo trip</span>
+                </div>
+            </div>
+
+            <button class="btn-next" onclick="submitPreference()">
+                Next <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script>
+        const statusItems = [
+            "Analyzing Tamil Nadu destinations...",
+            "Scouting hidden hill station gems...",
+            "Checking heritage hotel availability...",
+            "Matching locations to your budget...",
+            "Generating personalized insights...",
+            "Finalizing your Tripsero itinerary...",
+            "Ready for takeoff!"
+        ];
+
+        // GSAP Animations
+        // 1. Constant Plane Rotation
+        gsap.to("#planeWrapper", {
+            rotation: 360,
+            duration: 4,
+            repeat: -1,
+            ease: "none"
+        });
+
+        // 2. Earth Pulse
+        gsap.to("#centerCircle", {
+            scale: 1.15,
+            duration: 2,
+            repeat: -1,
+            yoyo: true,
+            ease: "sine.inOut"
+        });
+
+        // 3. Background Blobs Movement
+        gsap.to(".blob", {
+            x: "random(-100, 100)",
+            y: "random(-100, 100)",
+            duration: 10,
+            repeat: -1,
+            yoyo: true,
+            ease: "sine.inOut",
+            stagger: 2
+        });
+
+        // 4. Progress Logic
+        const progressBar = document.getElementById('progressBar');
+        const subStatus = document.getElementById('subStatus');
+        const mainStatus = document.getElementById('mainStatus');
+        let currentStep = 0;
+
+        const updateProgress = () => {
+            if (currentStep < statusItems.length) {
+                const statusText = statusItems[currentStep] || "Finalizing details...";
+                
+                // Update Sub Status with Fade
+                gsap.to(subStatus, {
+                    opacity: 0,
+                    y: -10,
+                    duration: 0.3,
+                    onComplete: () => {
+                        subStatus.innerText = statusText;
+                        gsap.to(subStatus, { opacity: 1, y: 0, duration: 0.3 });
+                    }
+                });
+
+                // Update Progress Bar
+                const progress = ((currentStep + 1) / statusItems.length) * 100;
+                gsap.to(progressBar, {
+                    width: `${progress}%`,
+                    duration: 1,
+                    ease: "power2.out"
+                });
+
+                currentStep++;
+                
+                // Show modal at 70% progress
+                if (currentStep === Math.floor(statusItems.length * 0.7)) {
+                    setTimeout(showPreferenceModal, 1000);
+                } else {
+                    setTimeout(updateProgress, 1500);
+                }
+            } else {
+                completeLoading();
+            }
+        };
+
+        function showPreferenceModal() {
+            const overlay = document.getElementById('prefModalOverlay');
+            overlay.style.display = 'flex';
+            
+            // Ensure elements are invisible before animation
+            gsap.set(".pref-modal", { opacity: 0, y: 50 });
+            gsap.set(".option-item", { opacity: 0, x: -20 });
+            gsap.set(".btn-next", { opacity: 0, y: 20 });
+
+            const tl = gsap.timeline();
+            
+            tl.to(".pref-modal", {
+                opacity: 1,
+                y: 0,
+                duration: 0.6,
+                ease: "power3.out"
+            })
+            .to(".option-item", {
+                opacity: 1,
+                x: 0,
+                duration: 0.4,
+                stagger: 0.08,
+                ease: "power2.out"
+            }, "-=0.2")
+            .to(".btn-next", {
+                opacity: 1,
+                y: 0,
+                duration: 0.4
+            }, "-=0.2");
+
+            // Add hover effect with GSAP
+            document.querySelectorAll('.option-item').forEach(item => {
+                item.addEventListener('mouseenter', () => {
+                    gsap.to(item, { scale: 1.02, backgroundColor: "#f1f5f9", duration: 0.2 });
+                });
+                item.addEventListener('mouseleave', () => {
+                    if (!item.classList.contains('selected')) {
+                        gsap.to(item, { scale: 1, backgroundColor: "#f8fafc", duration: 0.2 });
+                    }
+                });
+            });
+        }
+
+        function selectOption(el, value) {
+            document.querySelectorAll('.option-item').forEach(item => item.classList.remove('selected'));
+            el.classList.add('selected');
+            el.dataset.value = value;
+        }
+
+        function submitPreference() {
+            const selected = document.querySelector('.option-item.selected');
+            if (!selected) {
+                // Shake if none selected
+                gsap.to(".pref-modal", { x: 10, duration: 0.1, repeat: 5, yoyo: true });
+                return;
+            }
+
+            const pref = selected.dataset.value;
+            const tripData = JSON.parse(localStorage.getItem('tripData') || '{}');
+            tripData.travelStyle = pref;
+            localStorage.setItem('tripData', JSON.stringify(tripData));
+
+            // Hide modal and resume
+            gsap.to(".modal-overlay", {
+                opacity: 0,
+                duration: 0.4,
+                onComplete: () => {
+                    document.getElementById('prefModalOverlay').style.display = 'none';
+                    updateProgress();
+                }
+            });
+        }
+
+        function closeModal() {
+            document.getElementById('prefModalOverlay').style.display = 'none';
+            updateProgress();
+        }
+
+        function completeLoading() {
+            gsap.to(".loading-container", {
+                scale: 0.9,
+                opacity: 0,
+                duration: 0.5,
+                delay: 0.5,
+                onComplete: () => {
+                    window.location.href = 'hotels.html';
+                }
+            });
+        }
+
+        // Start the sequence
+        setTimeout(updateProgress, 500);
+
+        // Entrance animation for the whole container
+        gsap.from(".loading-container", {
+            y: 30,
+            opacity: 0,
+            duration: 1,
+            ease: "power3.out"
+        });
+    </script>
+</body>
+
+</html>

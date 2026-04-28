@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Itinerary - Tripsero</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 8px 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #0f172a;
+            text-decoration: none;
+        }
+
+        .logo i {
+            color: #22c55e;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .nav-links a {
+            font-size: 14px;
+            font-weight: 500;
+            color: #64748b;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #22c55e;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f1f5f9;
+            padding: 10px 16px;
+            border-radius: 999px;
+            width: 220px;
+        }
+
+        .search-box i {
+            color: #94a3b8;
+        }
+
+        .search-box input {
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 14px;
+            width: 100%;
+        }
+
+        .header-icons {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-icons button {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            background: white;
+            color: #64748b;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            border-radius: 50%;
+        }
+
+        /* Main Layout */
+        .main-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 16px;
+            display: grid;
+            grid-template-columns: 200px 1fr 280px;
+            gap: 16px;
+        }
+
+        /* Left Sidebar */
+        .left-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .itinerary-nav {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-header {
+            color: #22c55e;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .nav-subtitle {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 16px;
+        }
+
+        .day-nav-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .day-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .day-nav-item:hover {
+            background: #f1f5f9;
+        }
+
+        .day-nav-item.active {
+            background: #22c55e;
+            color: white;
+        }
+
+        .day-nav-item i {
+            font-size: 14px;
+        }
+
+        .nav-divider {
+            height: 1px;
+            background: #e2e8f0;
+            margin: 12px 0;
+        }
+
+        /* Price Card */
+        .price-card {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            border-radius: 16px;
+            padding: 20px;
+            color: white;
+        }
+
+        .price-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .price-label {
+            font-size: 12px;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+
+        .savings-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .price-amount {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .price-amount span {
+            font-size: 16px;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+
+        .price-details {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-bottom: 16px;
+        }
+
+        .btn-book {
+            width: 100%;
+            background: white;
+            color: #16a34a;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-book:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Main Content */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Trip Header */
+        .trip-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+        }
+
+        .trip-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+
+        .trip-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .trip-meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-export {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            background: white;
+            font-size: 14px;
+            font-weight: 600;
+            color: #0f172a;
+            cursor: pointer;
+        }
+
+        .btn-export i {
+            color: #22c55e;
+        }
+
+        /* Day Section */
+        .day-section {
+            margin-bottom: 32px;
+        }
+
+        .day-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .day-number {
+            width: 40px;
+            height: 40px;
+            background: #e0f2fe;
+            color: #0284c7;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .day-info h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .day-info p {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e2e8f0;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -16px;
+            top: 20px;
+            width: 12px;
+            height: 12px;
+            background: #22c55e;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 0 2px #22c55e;
+        }
+
+        .activity-card {
+            background: white;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-left: 12px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            display: flex;
+            gap: 16px;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-badges {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .badge {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-sightseeing {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .badge-dining {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .badge-high-rated {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .activity-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+
+        .activity-time {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 12px;
+        }
+
+        .activity-time .price {
+            color: #22c55e;
+            font-weight: 600;
+        }
+
+        .activity-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-action {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-action.primary {
+            background: #22c55e;
+            color: white;
+            border: none;
+        }
+
+        .btn-action.secondary {
+            background: white;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+        }
+
+        .activity-image {
+            width: 120px;
+            height: 90px;
+            border-radius: 8px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .activity-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Travel Connector */
+        .travel-connector {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0 12px 36px;
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .travel-connector i {
+            color: #94a3b8;
+        }
+
+        /* Add Activity */
+        .add-activity {
+            background: white;
+            border: 2px dashed #e2e8f0;
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            margin-left: 36px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .add-activity:hover {
+            border-color: #22c55e;
+            background: #f0fdf4;
+        }
+
+        .add-activity i {
+            width: 40px;
+            height: 40px;
+            background: #22c55e;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+        }
+
+        .add-activity span {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        /* Right Sidebar */
+        .right-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .sidebar-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar-card h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-card h3 i {
+            color: #64748b;
+        }
+
+        .map-preview {
+            height: 180px;
+            background: #e0f2fe;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .map-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .map-link {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            background: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #22c55e;
+            text-decoration: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .distance-bar {
+            margin-top: 12px;
+        }
+
+        .distance-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+
+        .distance-track {
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .distance-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e, #f97316);
+            border-radius: 999px;
+            width: 60%;
+        }
+
+        /* Tip Card */
+        .tip-card {
+            display: flex;
+            gap: 12px;
+        }
+
+        .tip-icon {
+            width: 40px;
+            height: 40px;
+            background: #dcfce7;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #22c55e;
+            flex-shrink: 0;
+        }
+
+        .tip-content h4 {
+            font-size: 12px;
+            font-weight: 600;
+            color: #22c55e;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .tip-content p {
+            font-size: 13px;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+
+            .left-sidebar,
+            .right-sidebar {
+                display: none;
+            }
+        }
+        .travel-connector {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 10px 0 10px 14px;
+            padding-left: 20px;
+            border-left: 2px dashed #cbd5e1;
+            color: #64748b;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .travel-connector i {
+            color: #22c55e;
+            font-size: 14px;
+        }
+
+        .travel-connector span {
+            background: #f1f5f9;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        .ai-moment-card {
+            background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+            border: 2px solid #5eead4;
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0 20px 40px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(20, 184, 166, 0.1);
+        }
+
+        .ai-moment-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #14b8a6;
+            color: white;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 999px;
+            margin-bottom: 12px;
+        }
+
+        .ai-moment-content {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .ai-moment-info h4 {
+            font-size: 18px;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+
+        .ai-moment-info p {
+            font-size: 13px;
+            color: #475569;
+            margin-bottom: 12px;
+        }
+
+        .ai-moment-tag {
+            font-size: 11px;
+            font-weight: 700;
+            color: #0d9488;
+            background: rgba(20, 184, 166, 0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .ai-moment-image {
+            width: 100px;
+            height: 100px;
+            flex-shrink: 0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .ai-moment-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .meter-card {
+            text-align: center;
+        }
+
+        .gauge-container {
+            position: relative;
+            width: 100%;
+            max-width: 200px;
+            margin: 0 auto 20px;
+        }
+
+        .gauge-svg {
+            width: 100%;
+            height: auto;
+        }
+
+        .gauge-value {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            font-weight: 800;
+            color: #1e293b;
+        }
+
+        .route-breakdown {
+            margin-top: 20px;
+            text-align: left;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 16px;
+        }
+
+        .route-breakdown h4 {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .route-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .route-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .route-list::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .route-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: #334155;
+            background: #f8fafc;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        .route-item .spot-name {
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px;
+        }
+
+        .route-item .spot-dist {
+            color: #22c55e;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .vibe-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .vibe-item {
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .vibe-label {
+            font-size: 11px;
+            color: #64748b;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .vibe-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .vibe-badge {
+            background: #dcfce7;
+            color: #166534;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+        }
+
+        .dist-badge {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(4px);
+            color: #4ade80;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            border: 1px solid rgba(74, 222, 128, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <a href="HP/index.html" class="logo">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    Tripsero
+                </a>
+                <nav class="nav-links">
+                    <a href="hotels.html">Explore</a>
+                    <a href="#" class="active">Trips</a>
+                    <a href="tripcart.html">My Cart</a>
+                    <a href="#">Settings</a>
+                </nav>
+            </div>
+            <div class="header-right">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="Search destinations">
+                </div>
+                <div class="header-icons">
+                    <button><i class="fa-solid fa-share-nodes"></i></button>
+                    <button><i class="fa-solid fa-download"></i></button>
+                </div>
+                <div class="user-avatar"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+
+        <!-- Left Sidebar -->
+        <aside class="left-sidebar">
+            <div class="itinerary-nav">
+                <div class="nav-header">Your Itinerary</div>
+                <div class="nav-subtitle" id="tripDaysLabel">7 DAYS IN FRANCE</div>
+
+                <div class="day-nav-list" id="dayNavList">
+                    <!-- Days will be dynamically inserted -->
+                </div>
+
+                <div class="nav-divider"></div>
+
+                <div class="day-nav-item">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    Trip Stats
+                </div>
+                <div class="day-nav-item">
+                    <i class="fa-solid fa-receipt"></i>
+                    Cost Breakdown
+                </div>
+            </div>
+
+            <div class="price-card">
+                <div class="price-header">
+                    <span class="price-label">PRICE PER PERSON</span>
+                    <span class="savings-badge">SAVING 12%</span>
+                </div>
+                <div class="price-amount" id="totalPrice">₹1,452 <span>/guests</span></div>
+                <div class="price-details">Includes 12 activities, 3 hotel stays, and local transport.</div>
+                <button class="btn-book">Book All Activities</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- Trip Header -->
+            <div class="trip-header">
+                <div>
+                    <h1 class="trip-title" id="tripTitle">7 Days in Paris & Lyon</h1>
+                    <div class="trip-meta">
+                        <span><i class="fa-regular fa-calendar"></i> <span id="tripDates">Oct 12 - Oct 18</span></span>
+                        <span><i class="fa-solid fa-users"></i> <span id="guestCountDisplay">2</span> Travelers</span>
+                    </div>
+                </div>
+                <button class="btn-export" onclick="exportToPDF()">
+                    <i class="fa-solid fa-file-pdf"></i>
+                    Export PDF
+                </button>
+            </div>
+
+            <!-- Days Timeline -->
+            <div id="daysContainer">
+                <!-- Days will be dynamically inserted -->
+            </div>
+
+        </main>
+
+        <!-- Right Sidebar -->
+        <aside class="right-sidebar">
+            <div class="sidebar-card">
+                <h3><i class="fa-solid fa-map-location-dot"></i> Interactive Map</h3>
+                <div class="map-preview" style="height: 250px; overflow: hidden; border-radius: 12px;">
+                    <iframe 
+                        id="tripMap"
+                        width="100%" 
+                        height="100%" 
+                        style="border:0" 
+                        loading="lazy" 
+                        src="https://maps.google.com/maps?q=Tamil+Nadu&t=&z=13&ie=UTF8&iwloc=&output=embed">
+                    </iframe>
+                </div>
+                <div class="distance-bar">
+                    <div class="distance-label">
+                        <span>Daily Distance</span>
+                        <span id="dailyDistanceDisplay" style="font-weight: 800; font-size: 1.2em; color: #22c55e;">0.0 km</span>
+                    </div>
+                    <div class="distance-track" style="height: 10px; background: #f1f5f9; border-radius: 5px; margin-top: 8px;">
+                        <div class="distance-fill" id="distanceFill" style="width: 0%; height: 100%; background: linear-gradient(90deg, #22c55e, #16a34a); border-radius: 5px; transition: width 1s ease-out;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-card">
+                <div class="tip-card">
+                    <div class="tip-icon" style="background: #e0f2fe; color: #0284c7;">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </div>
+                    <div class="tip-content">
+                        <h4 style="color: #0284c7;">Tripsero Pro Tip</h4>
+                        <p id="dynamicProTip">Early morning visits to local sights often reveal hidden rituals and offer better photos without the crowds. Plan for a 6:00 AM start!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Distance Meter Card (Replacing Local Vibe) -->
+            <div class="sidebar-card meter-card">
+                <h3><i class="fa-solid fa-gauge-high"></i> Distance Meter</h3>
+                <div class="gauge-container">
+                    <svg viewBox="0 0 100 50" class="gauge-svg">
+                        <path d="M 10 45 A 35 35 0 0 1 90 45" fill="none" stroke="#e2e8f0" stroke-width="8" stroke-linecap="round"/>
+                        <path d="M 10 45 A 35 35 0 0 1 90 45" fill="none" stroke="#22c55e" stroke-width="8" stroke-linecap="round" 
+                              stroke-dasharray="125.6" stroke-dashoffset="125.6" id="gaugeProgress" style="transition: stroke-dashoffset 1.5s ease-out;"/>
+                    </svg>
+                    <div class="gauge-value" id="gaugeText">0.0 km</div>
+                </div>
+                <div class="vibe-grid">
+                    <div class="vibe-item">
+                        <div class="vibe-label">Estimated Time</div>
+                        <div class="vibe-value" id="travelTime"><i class="fa-solid fa-car"></i> 45m</div>
+                    </div>
+                    <div class="vibe-item">
+                        <div class="vibe-label">Stops</div>
+                        <div class="vibe-value" id="stopCount">4 Spots</div>
+                    </div>
+                </div>
+                <div class="route-breakdown">
+                    <h4><i class="fa-solid fa-route"></i> Route Details</h4>
+                    <div id="routeList" class="route-list">
+                        <!-- Individual distances will be listed here -->
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+
+    <script src="database.js"></script>
+    <script src="tamilnadu-tourism-db.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="app.js"></script>
+    <script>
+        // Register GSAP Plugins
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Generate itinerary from cart
+        function generateItinerary() {
+            const cart = TripPlanner.getCart();
+            const tripData = TripPlanner.getTripData();
+            const days = tripData.duration || 7;
+
+            // Update header info
+            document.getElementById('tripTitle').textContent = `${days} Days in ${tripData.destination || 'Paris & Lyon'}`;
+            document.getElementById('tripDaysLabel').textContent = `${days} DAYS IN ${(tripData.destination || 'FRANCE').toUpperCase()}`;
+
+            if (tripData.startDate && tripData.endDate) {
+                const start = new Date(tripData.startDate);
+                const end = new Date(tripData.endDate);
+                const options = { month: 'short', day: 'numeric' };
+                document.getElementById('tripDates').textContent =
+                    `${start.toLocaleDateString('en-US', options)} - ${end.toLocaleDateString('en-US', options)}`;
+            }
+
+            // Update Map
+            if (tripData.destination) {
+                document.getElementById('tripMap').src = `https://maps.google.com/maps?q=${encodeURIComponent(tripData.destination)}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
+            }
+
+            // Calculate costs
+            const travelers = tripData.travelers || 1;
+            let hotelsTotal = 0;
+            let activitiesTotal = 0;
+            cart.hotels.forEach(h => hotelsTotal += h.price * (h.nights || days));
+            cart.activities.forEach(a => activitiesTotal += a.price * travelers);
+            cart.restaurants.forEach(r => activitiesTotal += r.price);
+
+            const total = hotelsTotal + activitiesTotal;
+
+            // Animate total price counter
+            const priceObj = { val: 0 };
+            gsap.to(priceObj, {
+                val: total,
+                duration: 1.5,
+                ease: "power2.out",
+                onUpdate: () => {
+                    const perPerson = priceObj.val / travelers;
+                    document.getElementById('totalPrice').innerHTML = `₹${Math.floor(perPerson).toLocaleString()} <span>/person</span>`;
+                }
+            });
+
+            document.getElementById('guestCountDisplay').textContent = travelers;
+
+            // Update Distance Meter
+            updateDistanceMeter();
+
+            // Generate day navigation
+            const dayNavList = document.getElementById('dayNavList');
+            dayNavList.innerHTML = '';
+            for (let i = 0; i < days; i++) {
+                const dayNav = document.createElement('div');
+                dayNav.className = `day-nav-item ${i === 0 ? 'active' : ''}`;
+                dayNav.id = `nav-day-${i}`;
+                dayNav.innerHTML = `<i class="fa-regular fa-calendar"></i> Day ${i + 1}: ${getDayTitle(i, tripData.destination)}`;
+                
+                // Add click handler to scroll to day
+                dayNav.addEventListener('click', () => {
+                    const target = document.getElementById(`day-section-${i}`);
+                    if (target) {
+                        window.scrollTo({
+                            top: target.offsetTop - 100,
+                            behavior: 'smooth'
+                        });
+                        
+                        // Update active state
+                        document.querySelectorAll('.day-nav-item').forEach(n => n.classList.remove('active'));
+                        dayNav.classList.add('active');
+                    }
+                });
+                
+                dayNavList.appendChild(dayNav);
+            }
+
+            // Generate day sections
+            const daysContainer = document.getElementById('daysContainer');
+            daysContainer.innerHTML = '';
+
+            for (let i = 0; i < days; i++) {
+                const daySection = createDaySection(i, cart, tripData);
+                daysContainer.appendChild(daySection);
+            }
+        }
+
+        function getDayTitle(dayIndex, destination = '') {
+            const isParis = destination.toLowerCase().includes('paris') || destination.toLowerCase().includes('france');
+            
+            const genericTitles = [
+                'Arrival & Exploration', 
+                'Local Culture & Sights', 
+                'Hidden Gems Tour', 
+                'Authentic Experience', 
+                'Market & Food Walk', 
+                'Photography Tour', 
+                'Final Souvenirs & Departure'
+            ];
+            
+            const parisTitles = [
+                'Arrival & Seine Views', 
+                'Art & History at Louvre', 
+                'Versailles Day Trip', 
+                'Montmartre Magic', 
+                'Eiffel Tower Evening', 
+                'Fashion & Shopping', 
+                'Departure'
+            ];
+            
+            const titles = isParis ? parisTitles : genericTitles;
+            return titles[dayIndex % titles.length];
+        }
+
+        function createDaySection(dayIndex, cart, tripData) {
+            const section = document.createElement('div');
+            section.className = 'day-section';
+
+            const date = new Date();
+            if (tripData.startDate) {
+                date.setTime(new Date(tripData.startDate).getTime() + (dayIndex * 24 * 60 * 60 * 1000));
+            } else {
+                date.setDate(date.getDate() + dayIndex);
+            }
+            const dateStr = date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+            section.innerHTML = `
+                <div class="day-header" id="day-section-${dayIndex}">
+                    <div class="day-number">${dayIndex + 1}</div>
+                    <div class="day-info">
+                        <h2>Day ${dayIndex + 1}: ${getDayTitle(dayIndex, tripData.destination)}</h2>
+                        <p>${dateStr}</p>
+                    </div>
+                </div>
+                <div class="timeline" id="timeline-${dayIndex}">
+                    ${generateTimelineItems(dayIndex, cart)}
+                    <div class="add-activity">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Add an activity to Day ${dayIndex + 1}</span>
+                    </div>
+                </div>
+            `;
+
+            return section;
+        }
+
+        function generateTimelineItems(dayIndex, cart) {
+            let html = '';
+            const travelers = TripPlanner.getTripData().travelers || 1;
+            const totalDays = TripPlanner.getTripData().duration || 5;
+            let dayDistance = 0;
+
+            const hotel = cart.hotels.length > 0 ? cart.hotels[0] : null;
+
+            // 1. Hotels: Show the hotel for the current day
+            if (hotel) {
+                if (dayIndex === 0) {
+                    html += createActivityCard('hotel', hotel.name, hotel.location, '03:00 PM - Check-in', hotel.price, hotel.image);
+                } else {
+                    html += `<div class="travel-connector"><i class="fa-solid fa-bed"></i> Staying at ${hotel.name}</div>`;
+                }
+            }
+
+            // 2. Activities: Distribute activities across days
+            const activities = cart.activities || [];
+            const activitiesPerDay = Math.ceil(activities.length / totalDays);
+            const startIdx = dayIndex * activitiesPerDay;
+            const endIdx = startIdx + activitiesPerDay;
+            const dayActivities = activities.slice(startIdx, endIdx);
+
+            dayActivities.forEach((activity, idx) => {
+                const time = idx === 0 ? '09:00 AM - 12:00 PM' : '02:00 PM - 05:00 PM';
+                
+                // Calculate distance from hotel
+                const dist = getSimulatedDistance(hotel ? hotel.name : '', activity.name);
+                dayDistance += dist;
+                
+                html += `<div class="travel-connector">
+                            <i class="fa-solid fa-car-side"></i> 
+                            <span>${dist.toFixed(1)} km from ${hotel ? hotel.name : 'start'}</span>
+                         </div>`;
+                html += createActivityCard('sightseeing', activity.name, activity.location, time, activity.price * travelers, activity.image);
+            });
+
+            // 3. Restaurants
+            const restaurants = cart.restaurants || [];
+            const restaurantsPerDay = Math.ceil(restaurants.length / totalDays);
+            const rStartIdx = dayIndex * restaurantsPerDay;
+            const rEndIdx = rStartIdx + restaurantsPerDay;
+            const dayRestaurants = restaurants.slice(rStartIdx, rEndIdx);
+
+            dayRestaurants.forEach((restaurant, idx) => {
+                const time = idx === 0 ? '12:30 PM - 01:45 PM' : '07:30 PM - 09:00 PM';
+                const dist = getSimulatedDistance(hotel ? hotel.name : '', restaurant.name);
+                dayDistance += dist;
+
+                html += `<div class="travel-connector">
+                            <i class="fa-solid fa-utensils"></i> 
+                            <span>${dist.toFixed(1)} km from ${hotel ? hotel.name : 'start'}</span>
+                         </div>`;
+                html += createActivityCard('dining', restaurant.name, restaurant.location, time, restaurant.price, restaurant.image);
+            });
+
+            // 4. Personalized AI Moment (LOVE MOMENTS for Couples)
+            const travelStyle = TripPlanner.getTripData().travelStyle || 'Solo';
+            const aiMoment = getPersonalizedMoment(travelStyle, dayIndex);
+            if (aiMoment) {
+                html += `
+                    <div class="ai-moment-card">
+                        <div class="ai-moment-badge"><i class="fa-solid fa-sparkles"></i> AI-CURATED MOMENT</div>
+                        <div class="ai-moment-content">
+                            <div class="ai-moment-info">
+                                <h4>${aiMoment.title}</h4>
+                                <p>${aiMoment.desc}</p>
+                                <span class="ai-moment-tag">${aiMoment.tag}</span>
+                            </div>
+                            <div class="ai-moment-image">
+                                <img src="${aiMoment.image}" alt="${aiMoment.title}">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Update Sidebar Distance (only for Day 1 or current day in real app)
+            if (dayIndex === 0) {
+                setTimeout(() => {
+                    document.getElementById('dailyDistanceDisplay').textContent = `${dayDistance.toFixed(1)} km`;
+                    const percentage = Math.min((dayDistance / 15) * 100, 100); // 15km as max for bar
+                    document.getElementById('distanceFill').style.width = `${percentage}%`;
+                }, 500);
+            }
+
+            return html;
+        }
+
+        // Simulated Distance Helper
+        function getSimulatedDistance(p1, p2) {
+            // Generates a deterministic but varied distance based on names
+            const combined = p1 + p2;
+            let hash = 0;
+            for (let i = 0; i < combined.length; i++) {
+                hash = ((hash << 5) - hash) + combined.charCodeAt(i);
+                hash |= 0;
+            }
+            // Return distance between 0.5 and 8.5 km
+            return 0.5 + (Math.abs(hash) % 80) / 10;
+        }
+
+        // Personalized Moments Generator
+        function getPersonalizedMoment(style, dayIndex) {
+            // Only suggest one moment per day
+            const moments = {
+                'Romantic': [
+                    { title: "Sunset Romance at Marina", desc: "A private stroll as the sky turns golden, perfect for love moments.", tag: "COUPLE FAVORITE", image: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=300" },
+                    { title: "Candlelight Rooftop Dinner", desc: "Private dining overlooking the city lights with personalized service.", tag: "TOP RATED FOR LOVE", image: "https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=300" }
+                ],
+                'Honeymoon': [
+                    { title: "Flower Path Surprise", desc: "A curated flower-decorated trail at your destination hotel.", tag: "EXCLUSIVE MOMENT", image: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=300" },
+                    { title: "Couple's Spa Retreat", desc: "A rejuvenating 90-minute aromatherapy session together.", tag: "RELAXATION", image: "https://images.unsplash.com/photo-1544161515-4508f8ad06d4?w=300" }
+                ],
+                'Family': [
+                    { title: "Interactive Workshop", desc: "Local craft making that kids and parents will both enjoy.", tag: "KIDS FRIENDLY", image: "https://images.unsplash.com/photo-1502086223501-7ea2443944b1?w=300" }
+                ],
+                'Friends': [
+                    { title: "Secret Night Trek", desc: "Explore the hidden paths with a private guide and bonfire.", tag: "ADVENTURE", image: "https://images.unsplash.com/photo-1478131143081-80f7f84ca84c?w=300" }
+                ],
+                'Solo': [
+                    { title: "Photography Zen Walk", desc: "Best spots for capturing the local soul in complete peace.", tag: "CREATIVE", image: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=300" }
+                ]
+            };
+
+            const styleMoments = moments[style] || moments['Solo'];
+            return styleMoments[dayIndex % styleMoments.length];
+        }
+
+        function createActivityCard(type, title, location, time, price, image) {
+            const badges = {
+                hotel: '<span class="badge badge-sightseeing" style="background: #dcfce7; color: #166534;">ACCOMMODATION</span>',
+                sightseeing: '<span class="badge badge-sightseeing">SIGHTSEEING</span><span class="badge badge-high-rated">HIGH RATED</span>',
+                dining: '<span class="badge badge-dining">DINING</span>'
+            };
+
+            const fallbacks = {
+                hotel: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500',
+                sightseeing: 'https://images.unsplash.com/photo-1503174971373-b1f69850bbd5?w=500',
+                dining: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500'
+            };
+
+            const displayImage = image || fallbacks[type] || fallbacks.sightseeing;
+
+            return `
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="activity-card">
+                        <div class="activity-content">
+                            <div class="activity-badges">
+                                ${badges[type] || badges.sightseeing}
+                            </div>
+                            <h3 class="activity-title">${title}</h3>
+                            <div class="activity-time">
+                                <i class="fa-regular fa-clock"></i> ${time}
+                                <span class="price">₹${price.toLocaleString()}</span>
+                            </div>
+                            <div class="activity-actions">
+                                <button class="btn-action ${type === 'dining' ? 'primary' : 'secondary'}">
+                                    <i class="fa-solid fa-circle-info"></i> Details
+                                </button>
+                                <button class="btn-action secondary">
+                                    <i class="fa-solid fa-location-dot"></i> Map
+                                </button>
+                            </div>
+                        </div>
+                        <div class="activity-image">
+                            <img src="${displayImage}" alt="${title}" onerror="this.src='${fallbacks.sightseeing}'">
+                            ${type !== 'hotel' ? `<div class="dist-badge"><i class="fa-solid fa-person-walking"></i> PROXIMITY</div>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateDistanceMeter() {
+            const tripData = TripPlanner.getTripData();
+            const cart = TripPlanner.getCart();
+            let totalDist = 0;
+            const hotel = cart.hotels[0];
+
+            // Calculate total simulated distance
+            cart.activities.forEach(a => totalDist += getSimulatedDistance(hotel ? hotel.name : '', a.name));
+            cart.restaurants.forEach(r => totalDist += getSimulatedDistance(hotel ? hotel.name : '', r.name));
+
+            // Update Meter UI
+            const gauge = document.getElementById('gaugeProgress');
+            const text = document.getElementById('gaugeText');
+            const time = document.getElementById('travelTime');
+            const stops = document.getElementById('stopCount');
+            if (gauge) {
+                text.textContent = `${totalDist.toFixed(1)} km`;
+                
+                const maxDist = 40; // Increased max for larger itineraries
+                const percentage = Math.min(totalDist / maxDist, 1);
+                const offset = 125.6 * (1 - percentage);
+                gauge.style.strokeDashoffset = offset;
+
+                // Update sub-stats
+                time.innerHTML = `<i class="fa-solid fa-car"></i> ${Math.round(totalDist * 8)}m`;
+                stops.textContent = `${cart.activities.length + cart.restaurants.length} Spots`;
+
+                // Generate Route Breakdown List
+                const routeList = document.getElementById('routeList');
+                routeList.innerHTML = '';
+                
+                const allSpots = [...cart.activities, ...cart.restaurants];
+                allSpots.forEach(spot => {
+                    const dist = getSimulatedDistance(hotel ? hotel.name : '', spot.name);
+                    const item = document.createElement('div');
+                    item.className = 'route-item';
+                    item.innerHTML = `
+                        <span class="spot-name">${spot.name}</span>
+                        <span class="spot-dist">${dist.toFixed(1)} km</span>
+                    `;
+                    routeList.appendChild(item);
+                });
+            }
+        }
+
+        function exportToPDF() {
+            const element = document.querySelector('.main-content');
+            const btn = document.querySelector('.btn-export');
+            
+            // UI feedback
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
+            btn.style.opacity = '0.7';
+            btn.disabled = true;
+
+            const opt = {
+                margin:       [10, 10],
+                filename:     'Tripsero-Itinerary.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            // Generate PDF
+            html2pdf().set(opt).from(element).save().then(() => {
+                btn.innerHTML = originalHTML;
+                btn.style.opacity = '1';
+                btn.disabled = false;
+            }).catch(err => {
+                console.error('PDF Export Error:', err);
+                btn.innerHTML = originalHTML;
+                btn.style.opacity = '1';
+                btn.disabled = false;
+                alert('Failed to generate PDF. Please try again.');
+            });
+        }
+
+
+        function initAnimations() {
+            // Initial animations
+            gsap.from(".left-sidebar", { x: -50, opacity: 0, duration: 0.8, ease: "power2.out" });
+            gsap.from(".right-sidebar", { x: 50, opacity: 0, duration: 0.8, ease: "power2.out" });
+            gsap.from(".trip-header", { y: -30, opacity: 0, duration: 0.6, delay: 0.2, ease: "power2.out" });
+            
+            // Scroll-triggered timeline reveal
+            gsap.utils.toArray(".timeline-item, .travel-connector, .ai-moment-card").forEach(item => {
+                gsap.from(item, {
+                    x: -30,
+                    opacity: 0,
+                    duration: 0.8,
+                    ease: "power2.out",
+                    scrollTrigger: {
+                        trigger: item,
+                        start: "top 90%",
+                        toggleActions: "play none none none"
+                    }
+                });
+
+                // Add special pulse for AI moments
+                if (item.classList.contains('ai-moment-card')) {
+                    gsap.to(item, {
+                        boxShadow: "0 10px 30px rgba(20, 184, 166, 0.4)",
+                        duration: 1.5,
+                        repeat: -1,
+                        yoyo: true,
+                        ease: "sine.inOut"
+                    });
+                }
+            });
+
+            // Active Nav Tracking on Scroll
+            gsap.utils.toArray(".day-section").forEach((section, i) => {
+                ScrollTrigger.create({
+                    trigger: section,
+                    start: "top 200px",
+                    end: "bottom 200px",
+                    onToggle: self => {
+                        if (self.isActive) {
+                            document.querySelectorAll('.day-nav-item').forEach(n => n.classList.remove('active'));
+                            const navItem = document.getElementById(`nav-day-${i}`);
+                            if (navItem) navItem.classList.add('active');
+                        }
+                    }
+                });
+            });
+
+            // Handle Booking Button
+            document.querySelector('.btn-book').addEventListener('click', () => {
+                const btn = document.querySelector('.btn-book');
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Finalizing...';
+                btn.style.background = '#0d9488';
+                
+                setTimeout(() => {
+                    window.location.href = 'confirmation.html';
+                }, 1500);
+            });
+        }
+
+        // Check if cart has items
+        if (TripPlanner.getCartItemCount() === 0) {
+            document.getElementById('daysContainer').innerHTML = `
+                <div class="activity-card" style="text-align: center; padding: 60px;">
+                    <i class="fa-solid fa-suitcase-rolling" style="font-size: 48px; color: #94a3b8; margin-bottom: 16px;"></i>
+                    <h3 style="margin-bottom: 8px;">No items in your trip</h3>
+                    <p style="color: #64748b; margin-bottom: 24px;">Add hotels and activities to generate your itinerary.</p>
+                    <a href="hotels.html" class="btn-action primary" style="display: inline-flex; padding: 12px 24px;">
+                        <i class="fa-solid fa-compass"></i> Explore Recommendations
+                    </a>
+                </div>
+            `;
+            // Still animate sidebars
+            gsap.from(".left-sidebar", { x: -50, opacity: 0, duration: 0.8, ease: "power2.out" });
+            gsap.from(".right-sidebar", { x: 50, opacity: 0, duration: 0.8, ease: "power2.out" });
+        } else {
+            generateItinerary();
+            initAnimations();
+        }
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planning Your Trip... - Tripsero</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #0f172a;
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .bg-glow {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(34, 197, 94, 0.1) 0%, transparent 70%);
+            z-index: 1;
+        }
+
+        .loader-container {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .globe-wrapper {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 40px;
+            position: relative;
+        }
+
+        .globe {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 2px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 50px rgba(34, 197, 94, 0.15);
+        }
+
+        .globe i {
+            font-size: 80px;
+            color: #334155;
+        }
+
+        .orbit {
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            right: -20px;
+            bottom: -20px;
+            border: 1px dashed rgba(34, 197, 94, 0.3);
+            border-radius: 50%;
+        }
+
+        .plane-icon {
+            position: absolute;
+            top: 50%;
+            right: -14px;
+            transform: translateY(-50%) rotate(90deg);
+            width: 28px;
+            height: 28px;
+            background: #22c55e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px #22c55e;
+            color: black;
+            font-size: 14px;
+        }
+
+        .status-area {
+            margin-top: 30px;
+            height: 100px;
+        }
+
+        .status-text {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+            letter-spacing: -1px;
+        }
+
+        .sub-status {
+            font-size: 16px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .progress-wrapper {
+            width: 320px;
+            height: 8px;
+            background: #1e293b;
+            border-radius: 999px;
+            margin: 40px auto 0;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e, #4ade80);
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.4);
+        }
+
+        .flying-icon {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #22c55e;
+            font-size: 18px;
+            pointer-events: none;
+            z-index: 5;
+            opacity: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="bg-glow"></div>
+
+    <div class="loader-container">
+        <div class="globe-wrapper">
+            <div class="globe" id="globe">
+                <i class="fa-solid fa-earth-americas"></i>
+            </div>
+            <div class="orbit" id="orbit">
+                <div class="plane-icon">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-area">
+            <h2 class="status-text" id="mainStatus">Generating Your Trip</h2>
+            <div class="sub-status" id="subStatus">Initializing AI engine...</div>
+        </div>
+
+        <div class="progress-wrapper">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script>
+        const statusSteps = [
+            { main: "Drafting Your Itinerary...", sub: "Analyzing your preferences" },
+            { main: "Checking Availability...", sub: "Scanning top-rated hotels" },
+            { main: "Curating Experiences...", sub: "Finding hidden gems & local spots" },
+            { main: "Optimizing Routes...", sub: "Calculating best travel times" },
+            { main: "Final Polish...", sub: "Applying Tripsero personalization" }
+        ];
+
+        const icons = ['fa-hotel', 'fa-utensils', 'fa-map-location-dot', 'fa-camera', 'fa-mountain', 'fa-passport'];
+
+        // GSAP Animations
+        gsap.to("#orbit", { rotation: 360, duration: 4, repeat: -1, ease: "none" });
+        gsap.to("#globe i", { scale: 1.1, opacity: 0.8, duration: 2, repeat: -1, yoyo: true, ease: "sine.inOut" });
+
+        let currentStep = 0;
+        const mainStatus = document.getElementById('mainStatus');
+        const subStatus = document.getElementById('subStatus');
+        const progressBar = document.getElementById('progressBar');
+
+        function spawnIcon() {
+            const icon = document.createElement('div');
+            icon.className = 'flying-icon';
+            icon.innerHTML = `<i class="fa-solid ${icons[Math.floor(Math.random() * icons.length)]}"></i>`;
+            document.body.appendChild(icon);
+
+            const startX = window.innerWidth / 2;
+            const startY = window.innerHeight / 2;
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 200 + Math.random() * 200;
+
+            gsap.fromTo(icon, 
+                { x: 0, y: 0, scale: 0, opacity: 0, rotation: 0 },
+                { 
+                    x: Math.cos(angle) * distance, 
+                    y: Math.sin(angle) * distance, 
+                    scale: 1, 
+                    opacity: 1, 
+                    rotation: 360,
+                    duration: 2, 
+                    ease: "power2.out",
+                    onComplete: () => {
+                        gsap.to(icon, { opacity: 0, scale: 0.5, duration: 0.5, onComplete: () => icon.remove() });
+                    }
+                }
+            );
+        }
+
+        const iconInterval = setInterval(spawnIcon, 600);
+
+        function updateProgress() {
+            if (currentStep < statusSteps.length) {
+                const step = statusSteps[currentStep];
+                
+                // Animate Text Change
+                gsap.to([mainStatus, subStatus], {
+                    opacity: 0, y: -10, duration: 0.3,
+                    onComplete: () => {
+                        mainStatus.innerText = step.main;
+                        subStatus.innerText = step.sub;
+                        gsap.to([mainStatus, subStatus], { opacity: 1, y: 0, duration: 0.3 });
+                    }
+                });
+
+                // Update Bar
+                const progress = ((currentStep + 1) / statusSteps.length) * 100;
+                gsap.to(progressBar, { width: `${progress}%`, duration: 1 });
+
+                currentStep++;
+                setTimeout(updateProgress, 1800);
+            } else {
+                clearInterval(iconInterval);
+                gsap.to(".loader-container", { scale: 0.9, opacity: 0, duration: 0.5, delay: 0.5, onComplete: () => {
+                    window.location.href = 'itinerary.html';
+                }});
+            }
+        }
+
+        setTimeout(updateProgress, 500);
+    </script>
+</body>
+
+</html>

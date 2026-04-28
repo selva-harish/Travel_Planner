@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Tripsero</title>
+    <link rel="stylesheet" href="global.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- GSAP for animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        :root {
+            --font-outfit: 'Outfit', sans-serif;
+            --accent-color: #22E55C;
+            --bg-dark: #0F1F14;
+            --text-muted: rgba(15, 31, 20, 0.6);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-outfit);
+            background-color: #f8faf8;
+            color: var(--bg-dark);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Split Screen Layout */
+        .login-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        .login-visual {
+            flex: 1.2;
+            position: relative;
+            overflow: hidden;
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-visual img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.85);
+            transform: scale(1.1);
+        }
+
+        .visual-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to right, rgba(0,0,0,0.4), transparent);
+            z-index: 1;
+        }
+
+        .visual-content {
+            position: absolute;
+            bottom: 60px;
+            left: 60px;
+            z-index: 2;
+            color: #fff;
+            max-width: 500px;
+        }
+
+        .visual-content h2 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            line-height: 1.1;
+        }
+
+        .visual-content p {
+            font-size: 18px;
+            opacity: 0.8;
+            font-weight: 300;
+        }
+
+        /* Form Side */
+        .login-form-side {
+            flex: 1;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px;
+            position: relative;
+        }
+
+        .form-wrapper {
+            width: 100%;
+            max-width: 420px;
+            opacity: 0;
+            transform: translateX(30px);
+        }
+
+        .logo-box {
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--accent-color);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--bg-dark);
+            font-size: 24px;
+            box-shadow: 0 10px 20px rgba(34, 229, 92, 0.2);
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .welcome-text h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .welcome-text p {
+            color: var(--text-muted);
+            margin-bottom: 40px;
+        }
+
+        /* Custom Input Styling */
+        .input-group {
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--bg-dark);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 2px solid #eee;
+            background: #f9f9f9;
+            font-family: inherit;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(34, 229, 92, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--bg-dark);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .login-btn:hover {
+            background: #000;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .google-btn-wrapper {
+            margin: 30px 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #ddd;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 30px;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #eee;
+        }
+
+        .divider:not(:empty)::before { margin-right: 1.5em; }
+        .divider:not(:empty)::after { margin-left: 1.5em; }
+
+        .guest-link {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 14px;
+            text-decoration: none;
+            display: block;
+            margin-top: 20px;
+            transition: color 0.3s;
+        }
+
+        .guest-link:hover {
+            color: var(--bg-dark);
+        }
+
+        #loginSuccess {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff;
+            z-index: 100;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--accent-color);
+            color: var(--bg-dark);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 1024px) {
+            .login-visual { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <!-- Visual Side -->
+        <div class="login-visual">
+            <img src="images/login_side.png" alt="Travel Visual">
+            <div class="visual-overlay"></div>
+            <div class="visual-content">
+                <h2>Travel in<br>Pure Style.</h2>
+                <p>Curating the world's most exclusive destinations for the modern explorer.</p>
+            </div>
+        </div>
+
+        <!-- Form Side -->
+        <div class="login-form-side">
+            <div class="form-wrapper">
+                <div class="logo-box">
+                    <div class="logo-icon"><i class="fa-solid fa-paper-plane"></i></div>
+                    <span class="logo-text">Tripsero</span>
+                </div>
+
+                <div class="welcome-text">
+                    <h1>Welcome Back</h1>
+                    <p>Your next journey begins with a single step.</p>
+                </div>
+
+                <!-- Google Sign-In -->
+                <div class="google-btn-wrapper">
+                    <div id="g_id_onload"
+                         data-client_id="971957301352-a6mqrr5t26pbuvghjv7c7jg1tg7o3cl9.apps.googleusercontent.com"
+                         data-context="signin"
+                         data-ux_mode="popup"
+                         data-callback="handleCredentialResponse"
+                         data-auto_prompt="false">
+                    </div>
+                    <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="outline" data-text="signin_with" data-size="large" data-logo_alignment="left" data-width="320"></div>
+                </div>
+
+                <div class="divider">or use credentials</div>
+
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" placeholder="name@company.com" id="email-field">
+                </div>
+
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" placeholder="••••••••" id="pass-field">
+                </div>
+
+                <button class="login-btn" onclick="simulateLogin()">Sign In to Dashboard</button>
+
+                <a href="HP/index.html" class="guest-link">Continue as Guest <i class="fa-solid fa-arrow-right-long" style="margin-left: 5px;"></i></a>
+            </div>
+
+            <!-- Success Overlay -->
+            <div id="loginSuccess">
+                <div class="success-icon"><i class="fa-solid fa-check"></i></div>
+                <h1 style="font-size: 32px; margin-bottom: 10px;">Authenticated</h1>
+                <p style="color: var(--text-muted);">Welcome back to Tripsero. Redirecting...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
+
+            // Visual Side Entrance
+            tl.to(".login-visual img", {
+                scale: 1,
+                duration: 2,
+                ease: "power2.out"
+            })
+            .from(".visual-content h2, .visual-content p", {
+                y: 50,
+                opacity: 0,
+                stagger: 0.2,
+                duration: 1.2
+            }, "-=1.5")
+            
+            // Form Side Entrance
+            .to(".form-wrapper", {
+                opacity: 1,
+                x: 0,
+                duration: 1.2
+            }, "-=1.5")
+            .from(".logo-box, .welcome-text > *, .google-btn-wrapper, .divider, .input-group, .login-btn, .guest-link", {
+                opacity: 0,
+                y: 20,
+                stagger: 0.05,
+                duration: 0.8
+            }, "-=1");
+        });
+
+        function handleCredentialResponse(response) {
+            const base64Url = response.credential.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            
+            const userPayload = JSON.parse(jsonPayload);
+            localStorage.setItem('tripseroUser', JSON.stringify(userPayload));
+            showSuccess();
+        }
+
+        function simulateLogin() {
+            const email = document.getElementById('email-field').value;
+            if(email) {
+                showSuccess();
+            } else {
+                gsap.to(".form-wrapper", { x: 10, repeat: 3, yoyo: true, duration: 0.05, ease: "none" });
+            }
+        }
+
+        function showSuccess() {
+            const success = document.getElementById('loginSuccess');
+            success.style.display = 'flex';
+            
+            gsap.from(success, {
+                opacity: 0,
+                scale: 1.1,
+                duration: 0.8,
+                ease: "expo.out"
+            });
+
+            gsap.from(".success-icon", {
+                scale: 0,
+                rotation: -180,
+                duration: 1,
+                ease: "elastic.out(1, 0.4)"
+            });
+
+            setTimeout(() => {
+                window.location.href = 'HP/index.html';
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
+
